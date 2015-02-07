@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/canaryio/canary"
+	"github.com/mathpl/canary"
 )
 
 func TestGoodMeasurement(t *testing.T) {

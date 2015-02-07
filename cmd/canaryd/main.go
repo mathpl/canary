@@ -6,10 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/canaryio/canary"
-	"github.com/canaryio/canary/pkg/libratopublisher"
-	"github.com/canaryio/canary/pkg/stdoutpublisher"
-	"github.com/canaryio/canary/pkg/transportsampler"
+	"github.com/mathpl/canary"
+	"github.com/mathpl/canary/pkg/libratopublisher"
+	"github.com/mathpl/canary/pkg/opentsdbstdoutpublisher"
+	"github.com/mathpl/canary/pkg/stdoutpublisher"
+	"github.com/mathpl/canary/pkg/transportsampler"
+	"github.com/mathpl/canary/pkg/zabbixstdoutpublisher"
 )
 
 type config struct {
@@ -61,6 +63,18 @@ func main() {
 				log.Fatal(err)
 			}
 			publishers = append(publishers, p)
+		case "opentsdbstdout":
+			p := opentsdbstdoutpublisher.New()
+			if err != nil {
+				log.Fatal(err)
+			}
+			publishers = append(publishers, p)
+		case "zabbixstdout":
+			p := zabbixstdoutpublisher.New()
+			if err != nil {
+				log.Fatal(err)
+			}
+			publishers = append(publishers, p)
 		default:
 			log.Printf("Unknown publisher: %s", publisher)
 		}
@@ -71,9 +85,9 @@ func main() {
 		scheduler := canary.Scheduler{
 			Target:  target,
 			C:       c,
-			Sampler: transportsampler.New(),
+			Sampler: transportsampler.New(target.Timeout),
 		}
-		go scheduler.Start()
+		go scheduler.Start(target.CheckInterval)
 	}
 
 	// publish each incoming measurement

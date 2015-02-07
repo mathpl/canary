@@ -19,9 +19,18 @@ func (e StatusCodeError) Error() string {
 }
 
 // Target represents the things that we are measureing.
-type Target struct {
+type JsonTarget struct {
 	URL  string
 	Name string
+}
+
+type Target struct {
+	URL           string
+	Name          string
+	Key           string
+	Type          string
+	CheckInterval time.Duration
+	Timeout       time.Duration
 }
 
 // Sample represents HTTP state from a given point in time.

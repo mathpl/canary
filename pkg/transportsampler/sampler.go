@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/canaryio/canary"
+	"github.com/mathpl/canary"
 )
 
 // TransportSampler implements Sampler, using http.Transport.
@@ -15,16 +15,16 @@ type TransportSampler struct {
 }
 
 // New initializes a sane sampler.
-func New() TransportSampler {
+func New(timeout time.Duration) TransportSampler {
 	return TransportSampler{
 		tr: http.Transport{
 			DisableKeepAlives: true,
 			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, 10*time.Second)
+				c, err := net.DialTimeout(netw, addr, timeout)
 				if err != nil {
 					return nil, err
 				}
-				c.SetDeadline(time.Now().Add(10 * time.Second))
+				c.SetDeadline(time.Now().Add(timeout))
 				return c, nil
 			},
 		},

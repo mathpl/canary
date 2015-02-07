@@ -3,7 +3,7 @@ package stdoutpublisher
 import (
 	"time"
 
-	"github.com/canaryio/canary"
+	"github.com/mathpl/canary"
 )
 
 func ExamplePublisher_Publish() {

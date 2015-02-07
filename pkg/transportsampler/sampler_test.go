@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/canaryio/canary"
+	"github.com/mathpl/canary"
 )
 
 func TestSample(t *testing.T) {

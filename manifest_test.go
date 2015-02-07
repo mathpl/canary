@@ -30,7 +30,7 @@ func TestGetManifest(t *testing.T) {
 	}
 
 	if len(m.Targets) != 1 {
-		t.Fatal("%d targets found, but expected 1", len(m.Targets))
+		t.Fatalf("%d targets found, but expected 1", len(m.Targets))
 	}
 
 	target := m.Targets[0]

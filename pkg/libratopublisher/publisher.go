@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/canaryio/canary"
-	"github.com/canaryio/canary/pkg/libratoaggregator"
+	"github.com/mathpl/canary"
+	"github.com/mathpl/canary/pkg/libratoaggregator"
 )
 
 // Publisher implements the canary.Publisher interface and

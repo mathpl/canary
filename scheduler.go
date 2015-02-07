@@ -29,11 +29,11 @@ func (s *Scheduler) measure() Measurement {
 }
 
 // Start is meant to be called within a goroutine, and fires up the main event loop.
-func (s *Scheduler) Start() {
+func (s *Scheduler) Start(checkInterval time.Duration) {
 	if s.stopChan == nil {
 		s.stopChan = make(chan int)
 	}
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(checkInterval)
 
 	for {
 		select {

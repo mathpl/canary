@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/canaryio/canary"
+	"github.com/mathpl/canary"
 )
 
 type gauge struct {

@@ -1,8 +1,7 @@
-package stdoutpublisher
+package opentsdbstdoutpublisher
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/mathpl/canary"
 )
@@ -20,24 +19,17 @@ func New() *Publisher {
 func (p *Publisher) Publish(m canary.Measurement) (err error) {
 	duration := m.Sample.T2.Sub(m.Sample.T1).Seconds() * 1000
 
-	isOK := true
 	if m.Error != nil {
-		isOK = false
-	}
-
-	errMessage := ``
-	if m.Error != nil {
-		errMessage = fmt.Sprintf("'%s'", m.Error)
+		m.Sample.StatusCode = -1
 	}
 
 	fmt.Printf(
-		"%s %s %d %f %t %s\n",
-		m.Sample.T2.Format(time.RFC3339),
-		m.Target.URL,
-		m.Sample.StatusCode,
+		"%s %d %f status=%d check=%s\n",
+		m.Target.Type,
+		m.Sample.T2.Unix(),
 		duration,
-		isOK,
-		errMessage,
+		m.Sample.StatusCode,
+		m.Target.Name,
 	)
 	return
 }
