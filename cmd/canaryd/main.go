@@ -11,6 +11,7 @@ import (
 	"github.com/mathpl/canary/pkg/opentsdbstdoutpublisher"
 	"github.com/mathpl/canary/pkg/stdoutpublisher"
 	"github.com/mathpl/canary/pkg/transportsampler"
+	"github.com/mathpl/canary/pkg/zabbixpublisher"
 	"github.com/mathpl/canary/pkg/zabbixstdoutpublisher"
 )
 
@@ -71,6 +72,12 @@ func main() {
 			publishers = append(publishers, p)
 		case "zabbixstdout":
 			p := zabbixstdoutpublisher.New()
+			if err != nil {
+				log.Fatal(err)
+			}
+			publishers = append(publishers, p)
+		case "zabbix":
+			p, err := zabbixpublisher.NewFromEnv()
 			if err != nil {
 				log.Fatal(err)
 			}

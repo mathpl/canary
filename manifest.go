@@ -48,7 +48,7 @@ func GetManifest(url string) (*Manifest, error) {
 			manifest.Targets = append(manifest.Targets, t)
 		}
 	} else if strings.HasPrefix(url, "zbx") {
-		zc, err := active_zabbix.NewZabbixConn(url, 5000, 5000)
+		zc, err := active_zabbix.NewZabbixActiveClient(url, 5000, 5000)
 		if err != nil {
 			return nil, err
 		}
