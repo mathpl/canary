@@ -9,9 +9,12 @@ import (
 )
 
 type Target struct {
-	URL  string
-	Name string
-	Interval int
+	URL      string
+	Name     string
+	Key      string
+	Type     string
+	Interval time.Duration
+	Timeout  time.Duration
 }
 
 type Sample struct {

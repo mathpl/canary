@@ -1,4 +1,4 @@
-package transportsampler
+package sampler
 
 import (
 	"fmt"

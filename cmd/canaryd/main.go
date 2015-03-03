@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/mathpl/canary"
 	"github.com/mathpl/canary/pkg/libratopublisher"
@@ -13,16 +14,15 @@ import (
 	"github.com/mathpl/canary/pkg/sampler"
 	"github.com/mathpl/canary/pkg/sensor"
 	"github.com/mathpl/canary/pkg/stdoutpublisher"
-	"github.com/mathpl/canary/pkg/transportsampler"
 	"github.com/mathpl/canary/pkg/zabbixpublisher"
 	"github.com/mathpl/canary/pkg/zabbixstdoutpublisher"
 )
 
 type config struct {
-	ManifestURL   string
-	DefaultSampleInterval int
-	RampupSensors bool
-	PublisherList []string
+	ManifestURL           string
+	DefaultSampleInterval time.Duration
+	RampupSensors         bool
+	PublisherList         []string
 }
 
 // builds the app configuration via ENV
@@ -41,12 +41,14 @@ func getConfig() (c config, err error) {
 	interval := os.Getenv("DEFAULT_SAMPLE_INTERVAL")
 	// if the variable is unset, an empty string will be returned
 	if interval == "" {
-		interval = "1"
+		interval = "1000"
 	}
-	c.DefaultSampleInterval, err = strconv.Atoi(interval)
+
+	defaultSampleInterval, err := strconv.Atoi(interval)
 	if err != nil {
 		err = fmt.Errorf("DEFAULT_SAMPLE_INTERVAL is not a valid integer")
 	}
+	c.DefaultSampleInterval = time.Duration(defaultSampleInterval) * time.Millisecond
 
 	// Set RampupSensors if RAMPUP_SENSORS is set to 'yes'
 	rampUp := os.Getenv("RAMPUP_SENSORS")
@@ -117,10 +119,10 @@ func main() {
 	// spinup a sensor for each target
 	for index, target := range manifest.Targets {
 		// Determine whether to use target.Interval or conf.DefaultSampleInterval
-		var interval int;
+		var interval time.Duration
 		// Targets that lack an interval value in JSON will have their value set to zero. in this case,
 		// use the DefaultSampleInterval
-		if target.Interval == 0 {
+		if target.Interval == time.Duration(0) {
 			interval = conf.DefaultSampleInterval
 		} else {
 			interval = target.Interval

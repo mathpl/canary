@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mathpl/canary"
 	"github.com/mathpl/canary/pkg/libratoaggregator"
 	"github.com/mathpl/canary/pkg/sampler"
 	"github.com/mathpl/canary/pkg/sensor"

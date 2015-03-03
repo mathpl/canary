@@ -3,7 +3,7 @@ package opentsdbstdoutpublisher
 import (
 	"fmt"
 
-	"github.com/mathpl/canary"
+	"github.com/mathpl/canary/pkg/sensor"
 )
 
 // Publisher implements canary.Publisher, and is our
@@ -16,7 +16,7 @@ func New() *Publisher {
 }
 
 // Publish takes a canary.Measurement and emits data to STDOUT.
-func (p *Publisher) Publish(m canary.Measurement) (err error) {
+func (p *Publisher) Publish(m sensor.Measurement) (err error) {
 	duration := m.Sample.T2.Sub(m.Sample.T1).Seconds() * 1000
 
 	if m.Error != nil {

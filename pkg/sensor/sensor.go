@@ -3,7 +3,7 @@ package sensor
 import (
 	"time"
 
-	"github.com/canaryio/canary/pkg/sampler"
+	"github.com/mathpl/canary/pkg/sampler"
 )
 
 // Measurement reprents an aggregate of Target, Sample and error.
@@ -34,16 +34,16 @@ func (s *Sensor) measure() Measurement {
 
 // Start is meant to be called within a goroutine, and fires up the main event loop.
 // interval is number of seconds. delay is number of ms.
-func (s *Sensor) Start(interval int, delay float64) {
+func (s *Sensor) Start(interval time.Duration, delay time.Duration) {
 	if s.stopChan == nil {
 		s.stopChan = make(chan int)
 	}
 
 	// Delay for loop start offset.
-	time.Sleep((time.Millisecond * time.Duration(delay)))
+	time.Sleep(delay)
 
 	// Start the ticker for this sensors interval
-	t := time.NewTicker((time.Second * time.Duration(interval)))
+	t := time.NewTicker(delay)
 
 	// Measure, then wait for ticker interval
 	s.C <- s.measure()

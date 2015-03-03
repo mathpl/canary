@@ -1,6 +1,6 @@
 package canary
 
-import "github.com/canaryio/canary/pkg/sensor"
+import "github.com/mathpl/canary/pkg/sensor"
 
 // Publisher is the interface that adds the Publish method.
 //

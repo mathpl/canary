@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/mathpl/active_zabbix"
-	"github.com/mathpl/canary"
+	"github.com/mathpl/canary/pkg/sensor"
 )
 
 // Publisher implements canary.Publisher, and is our
@@ -39,7 +39,7 @@ func NewFromEnv() (*Publisher, error) {
 }
 
 // Publish takes a canary.Measurement and emits data to STDOUT.
-func (p *Publisher) Publish(m canary.Measurement) (err error) {
+func (p *Publisher) Publish(m sensor.Measurement) (err error) {
 	if m.Error != nil {
 		m.Sample.StatusCode = -1
 	}
