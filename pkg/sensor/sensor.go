@@ -16,10 +16,11 @@ type Measurement struct {
 // Sensor is capable of repeatedly measuring a given Target
 // with a specific Sampler, and returns those results over channel C.
 type Sensor struct {
-	Target   sampler.Target
-	C        chan Measurement
-	Sampler  sampler.Sampler
-	stopChan chan int
+	Target    sampler.Target
+	C         chan Measurement
+	Sampler   sampler.Sampler
+	StopChan  chan int
+	IsStopped chan bool
 }
 
 // take a sample against a target.
@@ -35,24 +36,22 @@ func (s *Sensor) measure() Measurement {
 // Start is meant to be called within a goroutine, and fires up the main event loop.
 // interval is number of seconds. delay is number of ms.
 func (s *Sensor) Start(interval time.Duration, delay time.Duration) {
-	if s.stopChan == nil {
-		s.stopChan = make(chan int)
-	}
-
 	// Delay for loop start offset.
 	time.Sleep(delay)
 
 	// Start the ticker for this sensors interval
-	t := time.NewTicker(delay)
+	t := time.NewTicker(s.Target.Interval)
 
 	// Measure, then wait for ticker interval
 	s.C <- s.measure()
 
 	for {
+		<-t.C
 		select {
-		case <-s.stopChan:
+		case <-s.StopChan:
+			s.IsStopped <- true
 			return
-		case <-t.C:
+		default:
 			s.C <- s.measure()
 		}
 	}
@@ -60,5 +59,5 @@ func (s *Sensor) Start(interval time.Duration, delay time.Duration) {
 
 // Stop halts the event loop.
 func (s *Sensor) Stop() {
-	close(s.stopChan)
+	s.StopChan <- 1
 }
