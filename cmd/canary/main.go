@@ -4,27 +4,30 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/canaryio/canary"
+	"github.com/canaryio/canary/pkg/sampler"
+	"github.com/canaryio/canary/pkg/sensor"
 	"github.com/canaryio/canary/pkg/stdoutpublisher"
-	"github.com/canaryio/canary/pkg/transportsampler"
 )
 
 type command struct {
-	sampler   canary.Sampler
+	sampler   sampler.Sampler
 	publisher canary.Publisher
-	target    canary.Target
+	target    sampler.Target
+	interval  int
 }
 
 func (cmd command) Run() {
-	scheduler := canary.Scheduler{
+	sensor := sensor.Sensor{
 		Target:  cmd.target,
-		C:       make(chan canary.Measurement),
+		C:       make(chan sensor.Measurement),
 		Sampler: cmd.sampler,
 	}
-	go scheduler.Start()
+	go sensor.Start(cmd.interval, 0.0) // Start delay of zero.
 
-	for m := range scheduler.C {
+	for m := range sensor.C {
 		cmd.publisher.Publish(m)
 	}
 }
@@ -40,17 +43,27 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
+	interval_string := os.Getenv("SAMPLE_INTERVAL")
+	if interval_string == "" {
+		interval_string = "1"
+	}
+	sample_interval, err := strconv.Atoi(interval_string)
+	if err != nil {
+		err = fmt.Errorf("SAMPLE_INTERVAL is not a valid integer")
+	}
+
 	args := flag.Args()
 	if len(args) < 1 {
 		usage()
 	}
 
 	cmd := command{
-		target: canary.Target{
+		target: sampler.Target{
 			URL: args[0],
 		},
-		sampler:   transportsampler.New(),
+		sampler:   sampler.New(),
 		publisher: stdoutpublisher.New(),
+		interval: sample_interval,
 	}
 	cmd.Run()
 }

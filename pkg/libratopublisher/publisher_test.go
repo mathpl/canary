@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mathpl/canary"
+	"github.com/mathpl/canary/pkg/sampler"
+	"github.com/mathpl/canary/pkg/sensor"
 )
 
 func TestGoodMeasurement(t *testing.T) {
@@ -14,11 +15,11 @@ func TestGoodMeasurement(t *testing.T) {
 	t1, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:00Z")
 	t2, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:07Z")
 
-	m := canary.Measurement{
-		Target: canary.Target{
+	m := sensor.Measurement{
+		Target: sampler.Target{
 			Name: "test",
 		},
-		Sample: canary.Sample{
+		Sample: sampler.Sample{
 			T1:         t1,
 			T2:         t2,
 			StatusCode: 200,
@@ -47,16 +48,16 @@ func TestBadHTTPMeasurement(t *testing.T) {
 	t1, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:00Z")
 	t2, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:07Z")
 
-	m := canary.Measurement{
-		Target: canary.Target{
+	m := sensor.Measurement{
+		Target: sampler.Target{
 			Name: "test",
 		},
-		Sample: canary.Sample{
+		Sample: sampler.Sample{
 			T1:         t1,
 			T2:         t2,
 			StatusCode: 502,
 		},
-		Error: canary.StatusCodeError{
+		Error: sampler.StatusCodeError{
 			StatusCode: 502,
 		},
 	}
@@ -96,11 +97,11 @@ func TestBadTransportMeasurement(t *testing.T) {
 	t1, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:00Z")
 	t2, _ := time.Parse(time.RFC3339, "2014-12-28T00:00:07Z")
 
-	m := canary.Measurement{
-		Target: canary.Target{
+	m := sensor.Measurement{
+		Target: sampler.Target{
 			Name: "test",
 		},
-		Sample: canary.Sample{
+		Sample: sampler.Sample{
 			T1: t1,
 			T2: t2,
 		},

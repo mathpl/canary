@@ -5,10 +5,13 @@ import (
 	"log"
 	"os"
 	"strings"
+	"strconv"
 
 	"github.com/mathpl/canary"
 	"github.com/mathpl/canary/pkg/libratopublisher"
 	"github.com/mathpl/canary/pkg/opentsdbstdoutpublisher"
+	"github.com/mathpl/canary/pkg/sampler"
+	"github.com/mathpl/canary/pkg/sensor"
 	"github.com/mathpl/canary/pkg/stdoutpublisher"
 	"github.com/mathpl/canary/pkg/transportsampler"
 	"github.com/mathpl/canary/pkg/zabbixpublisher"
@@ -17,6 +20,8 @@ import (
 
 type config struct {
 	ManifestURL   string
+	DefaultSampleInterval int
+	RampupSensors bool
 	PublisherList []string
 }
 
@@ -33,6 +38,24 @@ func getConfig() (c config, err error) {
 	}
 	c.PublisherList = strings.Split(list, ",")
 
+	interval := os.Getenv("DEFAULT_SAMPLE_INTERVAL")
+	// if the variable is unset, an empty string will be returned
+	if interval == "" {
+		interval = "1"
+	}
+	c.DefaultSampleInterval, err = strconv.Atoi(interval)
+	if err != nil {
+		err = fmt.Errorf("DEFAULT_SAMPLE_INTERVAL is not a valid integer")
+	}
+
+	// Set RampupSensors if RAMPUP_SENSORS is set to 'yes'
+	rampUp := os.Getenv("RAMPUP_SENSORS")
+	if rampUp == "yes" {
+		c.RampupSensors = true
+	} else {
+		c.RampupSensors = false
+	}
+
 	return
 }
 
@@ -47,8 +70,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if conf.RampupSensors {
+		manifest.GenerateRampupDelays(conf.DefaultSampleInterval)
+	}
+
 	// output chan
-	c := make(chan canary.Measurement)
+	c := make(chan sensor.Measurement)
 
 	var publishers []canary.Publisher
 
@@ -87,14 +114,23 @@ func main() {
 		}
 	}
 
-	// spinup a scheduler for each target
-	for _, target := range manifest.Targets {
-		scheduler := canary.Scheduler{
+	// spinup a sensor for each target
+	for index, target := range manifest.Targets {
+		// Determine whether to use target.Interval or conf.DefaultSampleInterval
+		var interval int;
+		// Targets that lack an interval value in JSON will have their value set to zero. in this case,
+		// use the DefaultSampleInterval
+		if target.Interval == 0 {
+			interval = conf.DefaultSampleInterval
+		} else {
+			interval = target.Interval
+		}
+		sensor := sensor.Sensor{
 			Target:  target,
 			C:       c,
-			Sampler: transportsampler.New(target.Timeout),
+			Sampler: sampler.New(),
 		}
-		go scheduler.Start(target.CheckInterval)
+		go sensor.Start(interval, manifest.StartDelays[index])
 	}
 
 	// publish each incoming measurement
