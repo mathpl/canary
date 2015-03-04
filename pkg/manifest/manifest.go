@@ -57,12 +57,15 @@ func GetManifest(url string) (*Manifest, error) {
 		}
 
 		// Fetch active check for current hostname
-		//host, err := os.Hostname()
-		//if err != nil {
-		//	return nil, err
-		//}
 
 		host := os.Getenv("HOSTNAME")
+		if host == "" {
+			var err error
+			host, err = os.Hostname()
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		host_keys, err := zc.FetchActiveChecks(host)
 		if err != nil {
