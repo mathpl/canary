@@ -8,4 +8,5 @@ type Config struct {
 	ReloadInterval        time.Duration
 	RampupSensors         bool
 	PublisherList         []string
+	Ppid                  int
 }

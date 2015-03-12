@@ -48,6 +48,21 @@ func getConfig() (c canary.Config, err error) {
 	}
 	c.ReloadInterval = time.Duration(intReloadInterval) * time.Millisecond
 
+	// Check if parent has died, if so exit.
+	checkParent := os.Getenv("CHECK_PARENT")
+	if checkParent == "" {
+		checkParent = "0"
+	}
+
+	intCheckParent, err := strconv.Atoi(checkParent)
+	if err != nil {
+		err = fmt.Errorf("CHECK_PARENT is not a valid integer")
+	}
+
+	if intCheckParent != 0 {
+		c.Ppid = os.Getppid()
+	}
+
 	// Set RampupSensors if RAMPUP_SENSORS is set to 'yes'
 	rampUp := os.Getenv("RAMPUP_SENSORS")
 	if rampUp == "yes" {

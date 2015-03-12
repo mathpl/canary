@@ -18,12 +18,13 @@ import (
 )
 
 type Canary struct {
-	Config     Config
-	Manifest   manifest.Manifest
-	Publishers []Publisher
-	Sensors    []sensor.Sensor
-	OutputChan chan sensor.Measurement
-	ReloadChan chan bool
+	Config          Config
+	Manifest        manifest.Manifest
+	Publishers      []Publisher
+	Sensors         []sensor.Sensor
+	OutputChan      chan sensor.Measurement
+	ReloadChan      chan bool
+	CheckParentChan chan bool
 }
 
 // New returns a pointer to a new Publsher.
@@ -54,6 +55,21 @@ func (c *Canary) SignalHandler() {
 		case syscall.SIGHUP:
 			// Split reload logic into reloader() as to allow other things to trigger a manifest reload
 			c.ReloadChan <- true
+		}
+	}
+}
+
+func (c *Canary) checkParent() {
+	if c.CheckParentChan == nil {
+		c.CheckParentChan = make(chan bool)
+	}
+
+	for r := range c.CheckParentChan {
+		if r {
+			if os.Getppid() != c.Config.Ppid {
+				log.Fatal("Parent PID changed, stopping.")
+				os.Exit(0)
+			}
 		}
 	}
 }
@@ -150,10 +166,11 @@ func (c *Canary) Run() {
 	c.createPublishers()
 	// create and start sensors
 	c.startSensors()
-	// start a go routine for watching config reloads
-	go c.reloader()
 	// start a go routine for measurement publishing.
 	go c.publishMeasurements()
+
+	// start a go routine for watching config reloads
+	go c.reloader()
 
 	if c.Config.ReloadInterval > time.Duration(0) {
 		t := time.NewTicker(c.Config.ReloadInterval)
@@ -161,6 +178,18 @@ func (c *Canary) Run() {
 			for {
 				<-t.C
 				c.ReloadChan <- true
+			}
+		}()
+	}
+
+	go c.checkParent()
+
+	if c.Config.Ppid != 0 {
+		t := time.NewTicker(time.Duration(60) * time.Second)
+		go func() {
+			for {
+				<-t.C
+				c.CheckParentChan <- true
 			}
 		}()
 	}

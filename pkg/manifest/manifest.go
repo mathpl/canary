@@ -57,7 +57,6 @@ func GetManifest(url string) (*Manifest, error) {
 		}
 
 		// Fetch active check for current hostname
-
 		host := os.Getenv("HOSTNAME")
 		if host == "" {
 			var err error
