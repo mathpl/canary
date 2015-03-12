@@ -3,6 +3,7 @@ package zabbixstdoutpublisher
 import (
 	"fmt"
 
+	"github.com/mathpl/canary/pkg/sampler"
 	"github.com/mathpl/canary/pkg/sensor"
 )
 
@@ -17,8 +18,14 @@ func New() *Publisher {
 
 // Publish takes a canary.Measurement and emits data to STDOUT.
 func (p *Publisher) Publish(m sensor.Measurement) (err error) {
-	if m.Error != nil {
-		m.Sample.StatusCode = -1
+	switch e := m.Error.(type) {
+	case *sampler.StatusCodeError:
+		m.Sample.StatusCode = e.StatusCode
+	default:
+		fmt.Printf("%+V\n", e)
+		if m.Error != nil {
+			m.Sample.StatusCode = 0
+		}
 	}
 
 	fmt.Printf(

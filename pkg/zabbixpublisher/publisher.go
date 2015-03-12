@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/mathpl/active_zabbix"
+	"github.com/mathpl/canary/pkg/sampler"
 	"github.com/mathpl/canary/pkg/sensor"
 )
 
@@ -40,8 +41,13 @@ func NewFromEnv() (*Publisher, error) {
 
 // Publish takes a canary.Measurement and emits data to STDOUT.
 func (p *Publisher) Publish(m sensor.Measurement) (err error) {
-	if m.Error != nil {
-		m.Sample.StatusCode = -1
+	switch e := m.Error.(type) {
+	case *sampler.StatusCodeError:
+		m.Sample.StatusCode = e.StatusCode
+	default:
+		if m.Error == nil {
+			m.Sample.StatusCode = 0
+		}
 	}
 
 	zm := active_zabbix.ZabbixMetricKeyJson{Host: p.host, Key: m.Target.Key,

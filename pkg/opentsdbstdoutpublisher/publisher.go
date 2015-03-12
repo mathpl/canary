@@ -3,6 +3,7 @@ package opentsdbstdoutpublisher
 import (
 	"fmt"
 
+	"github.com/mathpl/canary/pkg/sampler"
 	"github.com/mathpl/canary/pkg/sensor"
 )
 
@@ -19,8 +20,13 @@ func New() *Publisher {
 func (p *Publisher) Publish(m sensor.Measurement) (err error) {
 	duration := m.Sample.T2.Sub(m.Sample.T1).Seconds() * 1000
 
-	if m.Error != nil {
-		m.Sample.StatusCode = -1
+	switch e := m.Error.(type) {
+	case *sampler.StatusCodeError:
+		m.Sample.StatusCode = e.StatusCode
+	default:
+		if m.Error == nil {
+			m.Sample.StatusCode = 0
+		}
 	}
 
 	fmt.Printf(
