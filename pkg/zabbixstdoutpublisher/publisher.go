@@ -22,7 +22,6 @@ func (p *Publisher) Publish(m sensor.Measurement) (err error) {
 	case *sampler.StatusCodeError:
 		m.Sample.StatusCode = e.StatusCode
 	default:
-		fmt.Printf("%+V\n", e)
 		if m.Error != nil {
 			m.Sample.StatusCode = 0
 		}
