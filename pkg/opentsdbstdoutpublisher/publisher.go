@@ -24,7 +24,7 @@ func (p *Publisher) Publish(m sensor.Measurement) (err error) {
 	case *sampler.StatusCodeError:
 		m.Sample.StatusCode = e.StatusCode
 	default:
-		if m.Error == nil {
+		if m.Error != nil {
 			m.Sample.StatusCode = 0
 		}
 	}
