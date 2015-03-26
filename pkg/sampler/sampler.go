@@ -49,16 +49,16 @@ type Sampler struct {
 }
 
 // New initializes a sane sampler.
-func New() Sampler {
+func New(timeout time.Duration) Sampler {
 	return Sampler{
 		tr: http.Transport{
 			DisableKeepAlives: true,
 			Dial: func(netw, addr string) (net.Conn, error) {
-				c, err := net.DialTimeout(netw, addr, 10*time.Second)
+				c, err := net.DialTimeout(netw, addr, timeout)
 				if err != nil {
 					return nil, err
 				}
-				c.SetDeadline(time.Now().Add(10 * time.Second))
+				c.SetDeadline(time.Now().Add(timeout))
 				return c, nil
 			},
 		},

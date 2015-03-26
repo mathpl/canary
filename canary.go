@@ -151,7 +151,7 @@ func (c *Canary) startSensors() {
 		sensor := sensor.Sensor{
 			Target:    target,
 			C:         c.OutputChan,
-			Sampler:   sampler.New(),
+			Sampler:   sampler.New(target.Timeout),
 			StopChan:  make(chan int, 1),
 			IsStopped: make(chan bool),
 		}
